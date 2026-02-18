@@ -1,0 +1,192 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Search Box */
+.search-box {
+  margin-bottom: 30px;
+}
+
+.search-box input {
+  padding: 10px;
+  font-size: 16px;
+  margin-right: 10px;
+  width: 200px;
+}
+
+.search-box button {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* Customer Details Card */
+.content {
+  display: flex;
+  gap: 30px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.customer-details-card,
+.risk-score-card {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  color: #333;
+  width: 300px;
+  text-align: left;
+}
+
+.detail-row {
+  margin-bottom: 10px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 5px;
+}
+
+.detail-row strong {
+  display: inline-block;
+  width: 120px;
+}
+
+/* Risk Score */
+.score-display {
+  font-size: 48px;
+  font-weight: bold;
+  text-align: center;
+  margin: 10px 0;
+}
+
+.high-risk {
+  color: #d32f2f;
+}
+
+.low-risk {
+  color: #388e3c;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+/* SHAP Explanation Styles */
+.explanation-card {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  color: #333;
+  width: 100%;
+  max-width: 800px;
+  margin: 30px auto;
+  text-align: left;
+}
+
+.shap-chart {
+  margin-top: 20px;
+}
+
+.shap-feature-row {
+  margin-bottom: 15px;
+}
+
+.feature-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.feature-name {
+  font-weight: 600;
+  color: #333;
+}
+
+.feature-value {
+  color: #666;
+  font-size: 12px;
+}
+
+.shap-bar-container {
+  width: 100%;
+  height: 30px;
+  position: relative;
+}
+
+.shap-bar {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 10px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.shap-bar.positive {
+  background: linear-gradient(90deg, rgba(211, 47, 47, 0.3), rgba(211, 47, 47, 0.8));
+  border: 1px solid #d32f2f;
+}
+
+.shap-bar.negative {
+  background: linear-gradient(90deg, rgba(56, 142, 60, 0.3), rgba(56, 142, 60, 0.8));
+  border: 1px solid #388e3c;
+}
+
+.shap-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.error {
+  color: #d32f2f;
+  font-weight: 600;
+  margin: 20px 0;
+}
