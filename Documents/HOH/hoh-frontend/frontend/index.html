@@ -1,13 +1,91 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
+
+<head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>frontend</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+    <link rel="stylesheet" href="/src/style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <div class="main-content" id="mainContent">
+
+            <div class="gauge-section" id="gaugeSection">
+                <div class="gauge-outer-wrapper">
+                    <div class="gauge-container">
+                        <div class="gauge-outline"></div>
+                        <div class="gauge-labels">
+                            <span>300</span>
+                            <span>850</span>
+                        </div>
+                        <div class="needle" id="gaugeNeedle"></div>
+                        <div class="score-text">
+                            <span id="liveScore">300</span>
+                            <small id="liveRating">Analyzing...</small>
+                        </div>
+                    </div>
+                </div>
+                <h2 class="glow-text">AI-Powered Credit Scoring</h2>
+                <p class="sub-text">Financial inclusion through intelligence</p>
+            </div>
+
+            <div class="dashboard-area" id="dashboardArea">
+                <div class="search-box">
+                    <input type="text" id="custSearchInput" placeholder="Enter Customer ID...">
+                    <button id="fetchBtn">Analyze</button>
+                </div>
+
+                <div class="result-grid">
+                    <div class="glass-card">
+                        <h3>Customer Profile</h3>
+                        <div class="info-line"><span>ID:</span> <b id="val-id">-</b></div>
+                        <div class="info-line"><span>Age:</span> <b id="val-age">-</b></div>
+                        <div class="info-line"><span>Monthly Income:</span> <b id="val-income">-</b></div>
+                        <div class="info-line"><span>Debt Ratio:</span> <b id="val-debt">-</b></div>
+                        <div class="info-line"><span>Dependents:</span> <b id="val-dep">-</b></div>
+                        <div class="info-line"><span>Revolving Util:</span> <b id="val-revol">-</b></div>
+                        <div class="info-line"><span>30-59 Days Late:</span> <b id="val-late30">-</b></div>
+                        <div class="info-line"><span>60-89 Days Late:</span> <b id="val-late60">-</b></div>
+                        <div class="info-line"><span>90+ Days Late:</span> <b id="val-late90">-</b></div>
+                        <div class="info-line"><span>Open Lines:</span> <b id="val-open">-</b></div>
+                        <div class="info-line"><span>Real Estate:</span> <b id="val-real">-</b></div>
+                    </div>
+
+                    <div class="glass-card risk-status">
+                        <h3>Risk Assessment</h3>
+                        <div class="risk-meter-wrapper">
+                            <div class="mini-gauge">
+                                <div class="mini-gauge-outline"></div>
+                                <div class="mini-needle" id="riskNeedle"></div>
+                                <div class="mini-score-overlay">
+                                    <span id="riskPercent">0%</span>
+                                </div>
+                            </div>
+                            <div id="riskLevelText" class="risk-label">Awaiting ID...</div>
+                        </div>
+                        <p class="disclaimer">Creditworthiness score based on AI analysis.</p>
+                    </div>
+                </div>
+
+                <!-- SHAP -->
+                <div id="shapSection" class="glass-card shap-explanation" style="margin-top: 25px; display: none;">
+                    <h3>AI Methodology (SHAP)</h3>
+                    <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 20px;">
+                        How our model weighed specific features to determine this risk profile.
+                    </p>
+                    <div id="shapChart" class="shap-chart">
+                        <!-- Bars -->
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
 </html>

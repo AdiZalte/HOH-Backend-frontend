@@ -20,7 +20,7 @@ exports.getCustomerAndScore = (req, res) => {
     try {
       console.log("Customer-Data-Keys:", Object.keys(customer));
 
-      // Prepare data for ML API
+      // Data
       const mlData = {
         RevolvingUtilizationOfUnsecuredLines: Number(customer.RevolvingUtilizationOfUnsecuredLines),
         age: Number(customer.age),
@@ -36,21 +36,18 @@ exports.getCustomerAndScore = (req, res) => {
 
       console.log("Sending-ML-Data:", JSON.stringify(mlData));
 
-      // Call ML API
+      // Prediction
       const mlResponse = await axios.post("http://localhost:8000/predict", mlData);
       riskScore = mlResponse.data.score;
+      console.log(`ML Score for ID ${id}:`, riskScore);
     } catch (apiError) {
       console.error("ML API Error Message:", apiError.message);
-      if (apiError.response) {
-        console.error("ML API Error Status:", apiError.response.status);
-        console.error("ML API Error Data:", JSON.stringify(apiError.response.data));
-      }
       riskScore = "ML Service Unavailable";
     }
 
     res.json({
       customer: customer,
-      riskScore: riskScore
+      riskScore: typeof riskScore === 'number' ? riskScore : 0 // Ensure consistent type or handled
     });
   });
 };
@@ -83,7 +80,7 @@ exports.getCustomerExplanation = (req, res) => {
     try {
       console.log("Fetching SHAP explanation for customer:", id);
 
-      // Prepare data for ML API (same as getCustomerAndScore)
+      // Data
       const mlData = {
         RevolvingUtilizationOfUnsecuredLines: Number(customer.RevolvingUtilizationOfUnsecuredLines),
         age: Number(customer.age),
@@ -99,9 +96,9 @@ exports.getCustomerExplanation = (req, res) => {
 
       console.log("Sending-ML-Explain-Data:", JSON.stringify(mlData));
 
-      // Call ML API /explain endpoint
+      // Explain
       const mlResponse = await axios.post("http://localhost:8000/explain", mlData);
-      
+
       res.json({
         explanation: mlResponse.data
       });

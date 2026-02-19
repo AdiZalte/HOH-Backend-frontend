@@ -3,10 +3,11 @@ import pandas as pd
 import pickle
 import os
 import shap
+import numpy as np
 
 app = Flask(__name__)
 
-# Load the model
+# Model
 model_path = os.path.join(os.path.dirname(__file__), 'credit_risk_model.pkl')
 try:
     with open(model_path, 'rb') as f:
@@ -23,15 +24,25 @@ except Exception as e:
     print(f"Error loading model: {e}")
     model = None
 
-# Load the SHAP explainer
+# Explainer
 explainer_path = os.path.join(os.path.dirname(__file__), 'shap_explainer.pkl')
 try:
     with open(explainer_path, 'rb') as f:
         explainer = pickle.load(f)
     print("SHAP explainer loaded successfully")
 except Exception as e:
-    print(f"Error loading SHAP explainer: {e}")
-    explainer = None
+    print(f"Error loading SHAP explainer file: {e}")
+    print("Attempting to re-create explainer from model...")
+    try:
+        if model:
+            # For XGBoost/sklearn models, TreeExplainer is best
+            explainer = shap.TreeExplainer(model)
+            print("Successfully re-created TreeExplainer")
+        else:
+            explainer = None
+    except Exception as e2:
+        print(f"Failed to create SHAP explainer: {e2}")
+        explainer = None
 
 
 @app.route('/predict', methods=['POST'])
@@ -42,7 +53,7 @@ def predict():
     try:
         data = request.get_json()
         
-        # 1. Basic Extraction
+        # Extraction
         revol = data.get('RevolvingUtilizationOfUnsecuredLines', 0)
         age = data.get('age', 0)
         num30 = data.get('NumberOfTime30-59DaysPastDueNotWorse', 0)
@@ -54,7 +65,7 @@ def predict():
         num60 = data.get('NumberOfTime60-89DaysPastDueNotWorse', 0)
         dependents = data.get('NumberOfDependents', 0)
 
-        # 2. Feature Engineering
+        # Features
         # TotalPastDue
         total_past_due = num30 + num60 + num90
         
@@ -77,7 +88,7 @@ def predict():
             
         age_group = get_age_group(age)
 
-        # 3. Create DataFrame with ALL features in correct order
+        # Dataframe
         # Order derived from logs: 
         # ['RevolvingUtilizationOfUnsecuredLines', 'age', 'NumberOfTime30-59DaysPastDueNotWorse', 'DebtRatio', 'MonthlyIncome', 
         #  'NumberOfOpenCreditLinesAndLoans', 'NumberOfTimes90DaysLate', 'NumberRealEstateLoansOrLines', 
@@ -136,7 +147,7 @@ def explain():
     try:
         data = request.get_json()
         
-        # 1. Basic Extraction (same as predict)
+        # Extraction
         revol = data.get('RevolvingUtilizationOfUnsecuredLines', 0)
         age = data.get('age', 0)
         num30 = data.get('NumberOfTime30-59DaysPastDueNotWorse', 0)
@@ -148,7 +159,7 @@ def explain():
         num60 = data.get('NumberOfTime60-89DaysPastDueNotWorse', 0)
         dependents = data.get('NumberOfDependents', 0)
 
-        # 2. Feature Engineering (same as predict)
+        # Features
         total_past_due = num30 + num60 + num90
         debt_income_ratio = debt_ratio
         any_serious_late = 1 if num90 > 0 else 0
@@ -165,7 +176,7 @@ def explain():
             
         age_group = get_age_group(age)
 
-        # 3. Create DataFrame with ALL features in correct order
+        # Dataframe
         features_dict = {
             'RevolvingUtilizationOfUnsecuredLines': revol,
             'age': age,
@@ -196,25 +207,51 @@ def explain():
         # Handle missing values
         input_data = input_data.fillna(0)
         
-        # Generate SHAP values
-        shap_values = explainer(input_data)
+        # SHAP
+        try:
+            shap_values_obj = explainer(input_data)
+        except Exception as e:
+            print(f"Error calling explainer: {e}")
+            # Fallback to older API
+            shap_values_obj = explainer.shap_values(input_data)
         
-        # Extract SHAP values for the first (and only) instance
-        # SHAP values structure depends on explainer type
-        if hasattr(shap_values, 'values'):
-            # For newer SHAP versions (Explanation object)
-            values = shap_values.values[0].tolist()
-            base_value = shap_values.base_values[0] if hasattr(shap_values, 'base_values') else 0
+        # Extract SHAP values safely
+        # Newer SHAP (explainer(data)) returns an Explanation object
+        if hasattr(shap_values_obj, 'values'):
+            values = shap_values_obj.values
+            base_value = shap_values_obj.base_values
+            
+            # Extract first instance
+            if len(values.shape) > 1: values = values[0]
+            if isinstance(base_value, (list, np.ndarray)) and len(base_value) > 0: base_value = base_value[0]
+            
+            # Handle multi-class (list or 3D array)
+            if isinstance(values, list) or (hasattr(values, 'shape') and len(values.shape) > 1):
+                values = values[1] if len(values) > 1 else values[0]
         else:
-            # For older SHAP versions (numpy array)
-            values = shap_values[0].tolist()
-            base_value = explainer.expected_value if hasattr(explainer, 'expected_value') else 0
+            # Older SHAP (explainer.shap_values(data)) returns a list or array
+            values = shap_values_obj
+            base_value = getattr(explainer, 'expected_value', 0)
+            
+            if isinstance(values, list):
+                # For binary classification, typically returns [neg_values, pos_values]
+                values = values[1] if len(values) > 1 else values[0]
+            
+            if len(values.shape) > 1:
+                values = values[0]
+                
+            if isinstance(base_value, (list, np.ndarray)) and len(base_value) > 0:
+                base_value = base_value[1] if len(base_value) > 1 else base_value[0]
 
-        # Return SHAP explanation
+        # Convert to list for JSON
+        if hasattr(values, 'tolist'): values = values.tolist()
+        if hasattr(base_value, 'tolist'): base_value = base_value.tolist()
+
+        # Return
         return jsonify({
             'shap_values': values,
             'feature_names': expected_cols,
-            'base_value': float(base_value),
+            'base_value': float(base_value) if isinstance(base_value, (int, float, np.float32, np.float64)) else base_value,
             'feature_values': input_data.iloc[0].tolist()
         })
 

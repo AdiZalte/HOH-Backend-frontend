@@ -5,7 +5,7 @@ const customerRoutes = require("./src/routes/customerRoutes");
 
 const app = express();
 
-// Add request logging
+// Logs
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
   next();
