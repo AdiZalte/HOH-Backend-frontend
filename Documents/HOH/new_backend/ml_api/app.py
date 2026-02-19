@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 import pickle
 
-
+# try error field
 try:
     model = pickle.load(open("credit_model.pkl", "rb"))
 except FileNotFoundError:
